@@ -20,6 +20,17 @@ class DataSetViewSet(viewsets.ModelViewSet):
     # Generate and link new DataSet and DataRow objects
     @action(detail=False, methods=['post'])
     def generate(self, request, pk=None):
+        print("############ PRINT ###########")
+        # print(request)
+        # print(request.data)
+        uploaded_file = request.FILES['file']
+        while True:
+            line = uploaded_file.readline()
+            if not line:
+                break
+            print(line)
+            # Get the 3 line values from here
+        print("############ PRINT ###########")
         requestName = request.data.get('name')
         requestRows = request.data.get('rows')
         autoMod = DataSet(name = requestName)
