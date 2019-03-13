@@ -20,28 +20,19 @@ class DataSetViewSet(viewsets.ModelViewSet):
     # Generate and link new DataSet and DataRow objects
     @action(detail=False, methods=['post'])
     def generate(self, request, pk=None):
-        print("############ PRINT ###########")
-        # print(request)
-        # print(request.data)
-        uploaded_file = request.FILES['file']
-        while True:
-            line = uploaded_file.readline()
-            if not line:
-                break
-            print(line)
-            # Get the 3 line values from here
-        print("############ PRINT ###########")
-        requestName = request.data.get('name')
-        requestRows = request.data.get('rows')
-        autoMod = DataSet(name = requestName)
-        autoMod.save()
-        serializer = DataRowSerializer(data=requestRows, many=True, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            for newRow in serializer.data:
-                autoMod.rows.add(list(newRow.values())[0])
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            uploaded_file = request.FILES['file']
+            autoMod = DataSet(name = uploaded_file.name)
+            autoMod.save()
+            while True:
+                line = uploaded_file.readline()
+                if not line: break
+                newRow = DataRow(content= str(line))
+                newRow.save()
+                autoMod.rows.add(newRow)
+            return Response(autoMod.pk, status=status.HTTP_201_CREATED)
+        except:
+            return Response("Error", status=status.HTTP_400_BAD_REQUEST)
 
     # Get the rows of a specific DataSet
     @action(detail=True, methods=['get'])
@@ -52,6 +43,7 @@ class DataSetViewSet(viewsets.ModelViewSet):
         return Response(serializer.data,status=200)
 
 # Remove the connection to selected DataRow in DataSet
+# NB! NO VALIDATION HERE (GET REQUESTS CAN MODIFY DATA)
 def remove_row(request, set_key, row_key):
     dataSet = DataSet.objects.filter(id=set_key).get()
     rowToRemove = DataRow.objects.filter(id=row_key).get()

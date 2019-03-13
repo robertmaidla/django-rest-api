@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class DataRow(models.Model):
-    content = models.CharField(max_length=5000)
+    content = models.CharField(max_length=50000)
     pass
 
 
